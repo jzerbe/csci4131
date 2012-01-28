@@ -46,13 +46,17 @@ public class HTTPServer extends Thread {
     public static void main(String args[]) throws IOException {
         String webroot;
         if (args.length != 1) {
-            throw new RuntimeException("Syntax: HTTPServer port-number");
+            throw new RuntimeException("Syntax: HTTPServer [port number > 1200]");
+        }
+        int aServerPortNum = Integer.parseInt(args[0]);
+        if (aServerPortNum <= 1200) {
+            throw new RuntimeException("Syntax: HTTPServer [port number > 1200]");
         }
 
         System.out.println("Starting server on port " + args[0]);
         webroot = System.getProperty("user.home") + "/webdir";
         System.out.println("Server rootpath = " + webroot);
-        ServerSocket server = new ServerSocket(Integer.parseInt(args[0]));
+        ServerSocket server = new ServerSocket(aServerPortNum);
 
         while (true) {
             System.out.println("Waiting for client request");
@@ -151,11 +155,11 @@ public class HTTPServer extends Thread {
         while (requestLine.length() != 0) {
             myStringTokenizer = new StringTokenizer(requestLine); //parse header line
             String aRequestHeaderKey = myStringTokenizer.nextToken(":").trim();
-            String aRequestHeaderValue = myStringTokenizer.nextToken().trim();
+            String aRequestHeaderValue = requestLine.replaceFirst(aRequestHeaderKey, "").replaceFirst(":", "").trim();
 
             myRequestHeaders.put(aRequestHeaderKey, aRequestHeaderValue); //add to hashmap for use later
 
-            System.out.println(aRequestHeaderKey + ":" + aRequestHeaderValue); //finally print out the parsed line
+            System.out.println(aRequestHeaderKey + ": " + aRequestHeaderValue); //finally print out the parsed line
 
             //pull down the next header line
             try {
@@ -172,13 +176,17 @@ public class HTTPServer extends Thread {
         System.out.println("DEBUG: file name to output = " + fileName);
 
         /* Create a new instance of GMT  time formatter   */
-        DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
         TimeZone tz = TimeZone.getTimeZone("GMT");
         df.setTimeZone(tz);
 
         /* output HTTP response */
         if (aResourceFile.isFile()) {
             boolean myEntityEmptyBoolean = false;
+
+            if (myRequestMethod.equals("HEAD")) {
+                myEntityEmptyBoolean = true;
+            }
 
             System.out.println("");
             System.out.println("***-*-*-*-*- Sending HTTP Response Message -*-*-*-***");
@@ -209,14 +217,12 @@ public class HTTPServer extends Thread {
             System.out.println("Last-Modified: " + df.format(new Date(aResourceFile.lastModified())));
             myResponsePrintStream.println("Last-Modified: " + df.format(new Date(aResourceFile.lastModified())));
 
-            if (!myEntityEmptyBoolean) {
-                System.out.println("Content-Length: " + aResourceFile.length());
-                myResponsePrintStream.println("Content-Length: " + aResourceFile.length());
-            }
+            System.out.println("Content-Length: " + aResourceFile.length());
+            myResponsePrintStream.println("Content-Length: " + aResourceFile.length());
 
             String mimeType = getMimeType(myFullResourcePath);
-            System.out.println("Content-Type:" + mimeType + "; charset=ISO-8859-1");
-            myResponsePrintStream.println("Content-Type:" + mimeType + "; charset=ISO-8859-1");
+            System.out.println("Content-Type: " + mimeType + "; charset=ISO-8859-1");
+            myResponsePrintStream.println("Content-Type: " + mimeType + "; charset=ISO-8859-1");
 
             System.out.println("Accept-Ranges: bytes");
             myResponsePrintStream.println("Accept-Ranges: bytes");

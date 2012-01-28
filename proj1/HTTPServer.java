@@ -182,7 +182,29 @@ public class HTTPServer extends Thread {
             /* setup file that is being requested */
             File aResourceFile = new File(myFullResourcePath);
 
-            if (!aResourceFile.exists()) {
+            if (myFullResourcePath.contains("csci4131")) {
+                System.out.println("HTTP/1.1 301 Moved Permanently");
+                myResponsePrintStream.println("HTTP/1.1 301 Moved Permanently");
+
+                System.out.println("Date: " + df.format(new Date()));
+                myResponsePrintStream.println("Date: " + df.format(new Date()));
+
+                System.out.println("Content-Type: text/plain; charset=ISO-8859-1");
+                myResponsePrintStream.println("Content-Type: text/plain; charset=ISO-8859-1");
+
+                System.out.println("Accept-Ranges: bytes");
+                myResponsePrintStream.println("Accept-Ranges: bytes");
+
+                System.out.println("Location: http://www-users.cselabs.umn.edu/classes/Spring-2012/csci4131/");
+                myResponsePrintStream.println("Location: http://www-users.cselabs.umn.edu/classes/Spring-2012/csci4131/");
+
+                System.out.println("Connection: close");
+                myResponsePrintStream.println("Connection: close");
+
+                myResponsePrintStream.println();
+
+                myResponsePrintStream.println("resource has moved permanently");
+            } else if (!aResourceFile.exists()) {
                 System.out.println("HTTP/1.1 404 Not found");
                 myResponsePrintStream.println("HTTP/1.1 404 Not found");
 

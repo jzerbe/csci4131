@@ -113,7 +113,7 @@ public class HTTPServer extends Thread {
 
         myStringTokenizer = new StringTokenizer(requestLine);
 
-        String myRequestMethod = myStringTokenizer.nextToken();   // [GET|POST|HEAD]
+        String myRequestMethod = myStringTokenizer.nextToken();   // [GET|HEAD]
         String myRequestUri = myStringTokenizer.nextToken();  // [URI]
         String myRequestProtocol = myStringTokenizer.nextToken();  // [1.1|1.0]
 
@@ -169,111 +169,182 @@ public class HTTPServer extends Thread {
             }
         }
 
-        /* setup file that is being requested */
-        File aResourceFile = new File(myFullResourcePath);
-        int lastSlash = myFullResourcePath.lastIndexOf("/");
-        String fileName = myFullResourcePath.substring(lastSlash + 1);
-        System.out.println("DEBUG: file name to output = " + fileName);
-
         /* Create a new instance of GMT  time formatter   */
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
         TimeZone tz = TimeZone.getTimeZone("GMT");
         df.setTimeZone(tz);
 
-        /* output HTTP response */
-        if (aResourceFile.isFile()) {
-            boolean myEntityEmptyBoolean = false;
+        System.out.println("***-*-*-*-*- Sending HTTP Response Message -*-*-*-***");
 
-            if (myRequestMethod.equals("HEAD")) {
-                myEntityEmptyBoolean = true;
-            }
+        /* check if the request method is supported */
+        if (myRequestMethod.equals("GET") || myRequestMethod.equals("HEAD")) {
 
-            System.out.println("");
-            System.out.println("***-*-*-*-*- Sending HTTP Response Message -*-*-*-***");
-            if (myRequestHeaders.containsKey(kIfModifiedSinceStr)
-                    && (myRequestHeaders.get(kIfModifiedSinceStr) == null
-                    ? df.format(new Date(aResourceFile.lastModified())) == null
-                    : myRequestHeaders.get(kIfModifiedSinceStr).equals(
-                    df.format(new Date(aResourceFile.lastModified()))))) {
-                System.out.println("HTTP/1.1 304 Not Modified");
-                myResponsePrintStream.println("HTTP/1.1 304 Not Modified");
-                myEntityEmptyBoolean = true;
-            } else if (myRequestHeaders.containsKey(kIfUnmodifiedSinceStr)
-                    && (myRequestHeaders.get(kIfUnmodifiedSinceStr) == null
-                    ? df.format(new Date(aResourceFile.lastModified())) != null
-                    : !myRequestHeaders.get(kIfUnmodifiedSinceStr).equals(
-                    df.format(new Date(aResourceFile.lastModified()))))) {
-                System.out.println("HTTP/1.1 412 Precondition Failed");
-                myResponsePrintStream.println("HTTP/1.1 412 Precondition Failed");
-                myEntityEmptyBoolean = true;
-            } else {
-                System.out.println("HTTP/1.1 200 OK");
-                myResponsePrintStream.println("HTTP/1.1 200 OK");
+            /* setup file that is being requested */
+            File aResourceFile = new File(myFullResourcePath);
+
+            if (!aResourceFile.exists()) {
+                System.out.println("HTTP/1.1 404 Not found");
+                myResponsePrintStream.println("HTTP/1.1 404 Not found");
+
+                System.out.println("Date: " + df.format(new Date()));
+                myResponsePrintStream.println("Date: " + df.format(new Date()));
+
+                System.out.println("Content-Type: text/plain; charset=ISO-8859-1");
+                myResponsePrintStream.println("Content-Type: text/plain; charset=ISO-8859-1");
+
+                System.out.println("Accept-Ranges: bytes");
+                myResponsePrintStream.println("Accept-Ranges: bytes");
+
+                System.out.println("Connection: close");
+                myResponsePrintStream.println("Connection: close");
+
+                myResponsePrintStream.println();
+
+                myResponsePrintStream.println("resource does not exist");
+            } else if (!aResourceFile.canRead()) {
+                System.out.println("HTTP/1.1 403 Forbidden");
+                myResponsePrintStream.println("HTTP/1.1 403 Forbidden");
+
+                System.out.println("Date: " + df.format(new Date()));
+                myResponsePrintStream.println("Date: " + df.format(new Date()));
+
+                System.out.println("Content-Type: text/plain; charset=ISO-8859-1");
+                myResponsePrintStream.println("Content-Type: text/plain; charset=ISO-8859-1");
+
+                System.out.println("Accept-Ranges: bytes");
+                myResponsePrintStream.println("Accept-Ranges: bytes");
+
+                System.out.println("Connection: close");
+                myResponsePrintStream.println("Connection: close");
+
+                myResponsePrintStream.println();
+
+                myResponsePrintStream.println("resource is unable to be read by the server");
+            } else if (aResourceFile.isFile()) {
+                boolean myEntityEmptyBoolean = false;
+
+                if (myRequestMethod.equals("HEAD")) {
+                    myEntityEmptyBoolean = true;
+                }
+
+                String mimeType = getMimeType(myFullResourcePath);
+                String mimeTypeArray[] = mimeType.split("/");
+
+                if (myRequestHeaders.containsKey("Accept")
+                        && (!myRequestHeaders.get("Accept").contains(mimeType)
+                        && !myRequestHeaders.get("Accept").contains(mimeTypeArray[0] + "/*")
+                        && !myRequestHeaders.get("Accept").contains("*/*"))) {
+                    System.out.println("HTTP/1.1 406 Not Acceptable");
+                    myResponsePrintStream.println("HTTP/1.1 406 Not Acceptable");
+                    myEntityEmptyBoolean = false; //RFC: HTTP/1.1 servers allowed return not acceptable responses
+                } else if (myRequestHeaders.containsKey(kIfModifiedSinceStr)
+                        && (myRequestHeaders.get(kIfModifiedSinceStr) == null
+                        ? df.format(new Date(aResourceFile.lastModified())) == null
+                        : myRequestHeaders.get(kIfModifiedSinceStr).equals(
+                        df.format(new Date(aResourceFile.lastModified()))))) {
+                    System.out.println("HTTP/1.1 304 Not Modified");
+                    myResponsePrintStream.println("HTTP/1.1 304 Not Modified");
+                    myEntityEmptyBoolean = true;
+                } else if (myRequestHeaders.containsKey(kIfUnmodifiedSinceStr)
+                        && (myRequestHeaders.get(kIfUnmodifiedSinceStr) == null
+                        ? df.format(new Date(aResourceFile.lastModified())) != null
+                        : !myRequestHeaders.get(kIfUnmodifiedSinceStr).equals(
+                        df.format(new Date(aResourceFile.lastModified()))))) {
+                    System.out.println("HTTP/1.1 412 Precondition Failed");
+                    myResponsePrintStream.println("HTTP/1.1 412 Precondition Failed");
+                    myEntityEmptyBoolean = true;
+                } else {
+                    System.out.println("HTTP/1.1 200 OK");
+                    myResponsePrintStream.println("HTTP/1.1 200 OK");
+                }
+
+                System.out.println("Date: " + df.format(new Date()));
+                myResponsePrintStream.println("Date: " + df.format(new Date()));
+
+                System.out.println("Last-Modified: " + df.format(new Date(aResourceFile.lastModified())));
+                myResponsePrintStream.println("Last-Modified: " + df.format(new Date(aResourceFile.lastModified())));
+
+                System.out.println("Content-Length: " + aResourceFile.length());
+                myResponsePrintStream.println("Content-Length: " + aResourceFile.length());
+
+                System.out.println("Content-Type: " + mimeType + "; charset=ISO-8859-1");
+                myResponsePrintStream.println("Content-Type: " + mimeType + "; charset=ISO-8859-1");
+
+                System.out.println("Accept-Ranges: bytes");
+                myResponsePrintStream.println("Accept-Ranges: bytes");
+
+                System.out.println("Connection: close");
+                myResponsePrintStream.println("Connection: close");
+
+                myResponsePrintStream.println();
+
+                /* output the file data - if necessary */
+                if (!myEntityEmptyBoolean) {
+                    FileInputStream aFileInputStream = null;
+                    try {
+                        aFileInputStream = new FileInputStream(myFullResourcePath);
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(HTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+                        if (aFileInputStream == null) {
+                            return;
+                        }
+                    }
+                    byte buffer[] = new byte[4096];
+                    int read;
+                    try {
+                        while ((read = aFileInputStream.read(buffer)) >= 0) {
+                            myResponseOutputStream.write(buffer, 0, read);
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(HTTPServer.class.getName()).log(Level.WARNING, null, ex);
+                    }
+                }
+            } else { //nothing to do?
+                System.out.println("HTTP/1.1 400 Bad Request");
+                myResponsePrintStream.println("HTTP/1.1 400 Bad Request");
+
+                System.out.println("Date: " + df.format(new Date()));
+                myResponsePrintStream.println("Date: " + df.format(new Date()));
+
+                System.out.println("Content-Type: text/plain; charset=ISO-8859-1");
+                myResponsePrintStream.println("Content-Type: text/plain; charset=ISO-8859-1");
+
+                System.out.println("Accept-Ranges: bytes");
+                myResponsePrintStream.println("Accept-Ranges: bytes");
+
+                System.out.println("Connection: close");
+                myResponsePrintStream.println("Connection: close");
+
+                myResponsePrintStream.println();
+
+                myResponsePrintStream.println("server does not understand");
             }
+        } else { //unsupported method
+            System.out.println("HTTP/1.1 405 Method Not Allowed");
+            myResponsePrintStream.println("HTTP/1.1 405 Method Not Allowed");
 
             System.out.println("Date: " + df.format(new Date()));
             myResponsePrintStream.println("Date: " + df.format(new Date()));
 
-            System.out.println("Last-Modified: " + df.format(new Date(aResourceFile.lastModified())));
-            myResponsePrintStream.println("Last-Modified: " + df.format(new Date(aResourceFile.lastModified())));
-
-            System.out.println("Content-Length: " + aResourceFile.length());
-            myResponsePrintStream.println("Content-Length: " + aResourceFile.length());
-
-            String mimeType = getMimeType(myFullResourcePath);
-            System.out.println("Content-Type: " + mimeType + "; charset=ISO-8859-1");
-            myResponsePrintStream.println("Content-Type: " + mimeType + "; charset=ISO-8859-1");
+            System.out.println("Content-Type: text/plain; charset=ISO-8859-1");
+            myResponsePrintStream.println("Content-Type: text/plain; charset=ISO-8859-1");
 
             System.out.println("Accept-Ranges: bytes");
             myResponsePrintStream.println("Accept-Ranges: bytes");
+
+            System.out.println("Allow: GET, HEAD");
+            myResponsePrintStream.println("Allow: GET, HEAD");
 
             System.out.println("Connection: close");
             myResponsePrintStream.println("Connection: close");
 
             myResponsePrintStream.println();
 
-            /* output the file data - if necessary */
-            if (!myEntityEmptyBoolean) {
-                FileInputStream aFileInputStream = null;
-                try {
-                    aFileInputStream = new FileInputStream(myFullResourcePath);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(HTTPServer.class.getName()).log(Level.SEVERE, null, ex);
-                    if (aFileInputStream == null) {
-                        return;
-                    }
-                }
-                byte buffer[] = new byte[4096];
-                int read;
-                try {
-                    while ((read = aFileInputStream.read(buffer)) >= 0) {
-                        myResponseOutputStream.write(buffer, 0, read);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(HTTPServer.class.getName()).log(Level.WARNING, null, ex);
-                }
-            }
-        } else {
-            System.out.println("***-*-*-*-*- Sending HTTP Response Message -*-*-*-***");
-            System.out.println("HTTP/1.1  404  Not found");
-            myResponsePrintStream.println("HTTP/1.1 404 Not found");
-
-            System.out.println("Date: " + df.format(new Date()));
-            myResponsePrintStream.println("Date: " + df.format(new Date()));
-
-            System.out.println("Content-Type: text/html; charset=ISO-8859-1");
-            myResponsePrintStream.println("Content-Type: text/html; charset=ISO-8859-1");
-
-            System.out.println("Accept-Ranges: bytes");
-            myResponsePrintStream.println("Accept-Ranges: bytes");
-
-            System.out.println("Connection: close");
-            myResponsePrintStream.println("Connection: close");
-
-            myResponsePrintStream.println();
+            myResponsePrintStream.println("method is not allowed in this context");
         }
-        System.out.println("DEBUG: client exit");
+
         System.out.println("---------------------------------------------------");
+
         try {
             myServerSocket.close();
         } catch (IOException ex) {

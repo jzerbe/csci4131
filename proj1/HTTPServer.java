@@ -26,12 +26,12 @@ public class HTTPServer extends Thread {
     public static final String kIfUnmodifiedSinceStr = "If-Unmodified-Since";
     //internal objects
     protected Socket myServerSocket = null;
-    protected String myRootPath = null;
+    protected static String myRootPath = "webdir"; //relative to HTTPServer
 
     HTTPServer(Socket theSocket) {
         System.out.println("DEBUG: spawn process for new client");
         this.myServerSocket = theSocket;
-        myRootPath = System.getProperty("user.home") + "/webdir";
+        //myRootPath = System.getProperty("user.home") + "/webdir";
         System.out.println("DEBUG: server rootpath = " + myRootPath);
     }
 
@@ -44,7 +44,6 @@ public class HTTPServer extends Thread {
      * @throws IOException
      */
     public static void main(String args[]) throws IOException {
-        String webroot;
         if (args.length != 1) {
             throw new RuntimeException("Syntax: HTTPServer [port number > 1200]");
         }
@@ -54,8 +53,7 @@ public class HTTPServer extends Thread {
         }
 
         System.out.println("Starting server on port " + args[0]);
-        webroot = System.getProperty("user.home") + "/webdir";
-        System.out.println("Server rootpath = " + webroot);
+        System.out.println("Server rootpath = " + myRootPath);
         ServerSocket server = new ServerSocket(aServerPortNum);
 
         while (true) {
@@ -182,7 +180,64 @@ public class HTTPServer extends Thread {
             /* setup file that is being requested */
             File aResourceFile = new File(myFullResourcePath);
 
-            if (myFullResourcePath.contains("csci4131")) {
+            if (myFullResourcePath.endsWith(".class") && !aResourceFile.exists()) { //dynamic class execution
+                System.out.println("HTTP/1.1 200 OK");
+                myResponsePrintStream.println("HTTP/1.1 200 OK");
+
+                System.out.println("Date: " + df.format(new Date()));
+                myResponsePrintStream.println("Date: " + df.format(new Date()));
+
+                System.out.println("Content-Type: image/jpeg; charset=ISO-8859-1");
+                myResponsePrintStream.println("Content-Type: image/jpeg; charset=ISO-8859-1");
+
+                System.out.println("Accept-Ranges: bytes");
+                myResponsePrintStream.println("Accept-Ranges: bytes");
+
+                System.out.println("Connection: close");
+                myResponsePrintStream.println("Connection: close");
+
+                System.out.println("Transfer-Encoding: chunked");
+                myResponsePrintStream.println("Transfer-Encoding: chunked");
+
+                myResponsePrintStream.println();
+
+                //setup and start process
+                int aLastSlash = myFullResourcePath.lastIndexOf("/");
+                String aFilename = myFullResourcePath.substring(aLastSlash + 1);
+                Process aProcess = null;
+                try {
+                    aProcess = Runtime.getRuntime().exec("java " + aFilename.replace(".class", ""));
+                } catch (IOException ex) {
+                    Logger.getLogger(HTTPServer.class.getName()).log(Level.WARNING, null, ex);
+
+                    System.out.println("0");
+                    myResponsePrintStream.println("0");
+
+                    System.out.println("DEBUG - error with exec");
+                }
+                //get and output process STDOUT buffer
+                BufferedReader aProcessStdOutput = new BufferedReader(new InputStreamReader(aProcess.getInputStream()));
+                char inputBuffer[] = new char[1024];
+                try {
+                    while (aProcessStdOutput.read(inputBuffer) > -1) {
+                        System.out.println(Integer.toHexString(inputBuffer.length));
+                        myResponsePrintStream.println(Integer.toHexString(inputBuffer.length));
+
+                        System.out.println(inputBuffer);
+                        myResponsePrintStream.println(inputBuffer);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(HTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+
+                    System.out.println("0");
+                    myResponsePrintStream.println("0");
+
+                    System.out.println("DEBUG - error reading from STDOUT of subprocess");
+                }
+
+                System.out.println("0");
+                myResponsePrintStream.println("0");
+            } else if (myFullResourcePath.contains("csci4131")) {
                 System.out.println("HTTP/1.1 301 Moved Permanently");
                 myResponsePrintStream.println("HTTP/1.1 301 Moved Permanently");
 
@@ -379,45 +434,36 @@ public class HTTPServer extends Thread {
      * getMimeType method returns the MIME type/subtype for a given file
      */
     private String getMimeType(String theRealPathStr) {
-
         if (theRealPathStr.endsWith(".html") || theRealPathStr.endsWith(".html")) {
             return "text/html";
-        }
-        if (theRealPathStr.endsWith(".txt") || theRealPathStr.endsWith(".c")
+        } else if (theRealPathStr.endsWith(".txt") || theRealPathStr.endsWith(".c")
                 || theRealPathStr.endsWith(".pl") || theRealPathStr.endsWith(".cc")
                 || theRealPathStr.endsWith(".h")) {
             return "text/plain";
-        }
-        if (theRealPathStr.endsWith(".jpg") || theRealPathStr.endsWith(".jpeg")
+        } else if (theRealPathStr.endsWith(".jpg") || theRealPathStr.endsWith(".jpeg")
                 || theRealPathStr.endsWith(".jpe")) {
             return "image/jpeg";
-        }
-        if (theRealPathStr.endsWith(".gif")) {
+        } else if (theRealPathStr.endsWith(".gif")) {
             return "image/gif";
-        }
-        if (theRealPathStr.endsWith(".pdf")) {
+        } else if (theRealPathStr.endsWith(".pdf")) {
             return "application/pdf";
-        }
-        if (theRealPathStr.endsWith(".ps") || theRealPathStr.endsWith(".eps")) {
+        } else if (theRealPathStr.endsWith(".ps") || theRealPathStr.endsWith(".eps")) {
             return "application/postscript";
-        }
-        if (theRealPathStr.endsWith(".ppt")) {
+        } else if (theRealPathStr.endsWith(".ppt")) {
             return "application/vnd.ms-powerpoint";
-        }
-        if (theRealPathStr.endsWith(".rtf")) {
+        } else if (theRealPathStr.endsWith(".rtf")) {
             return "application/rtf";
-        }
-        if (theRealPathStr.endsWith(".doc")) {
+        } else if (theRealPathStr.endsWith(".doc")) {
             return "application/msword";
-        }
-        if (theRealPathStr.endsWith(".xls") || theRealPathStr.endsWith(".xla")
+        } else if (theRealPathStr.endsWith(".xls") || theRealPathStr.endsWith(".xla")
                 || theRealPathStr.endsWith(".xlm") || theRealPathStr.endsWith(".xlc")) {
             return "application/vnd.ims-excel";
-        }
-        if (theRealPathStr.endsWith(".tgz")) {
+        } else if (theRealPathStr.endsWith(".tgz")) {
             return "application/x-compressed";
+        } else if (theRealPathStr.endsWith(".class")) {
+            return "";
+        } else {
+            return "text/plain";
         }
-
-        return "text/plain";
     }
 }

@@ -1,12 +1,12 @@
 
 /**
- * HTTPServer object is a subclass of thread.
- * For every request, an HTTPServer object is created to handle that request.
+ * HTTPServer object is a subclass of thread
+ * For every request, an HTTPServer object is created to handle that request
  *
- * serves content from ~/webdir
+ * serves content from "webdir" directory relative to running instance
  *
- * run: java HTTPServer 3333
- * access: http://[host]:3333/
+ * run: java HTTPServer 1201
+ * access: http://[host]:1201/
  */
 import java.net.*;
 import java.io.*;
@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author Anand Tripathi [Univeristy of Minnesota] (original)
+ * @author Anand Tripathi [Univeristy of Minnesota] (original example)
  * @author Jason Zerbe (assignment contributor)
  */
 public class HTTPServer extends Thread {
@@ -180,7 +180,7 @@ public class HTTPServer extends Thread {
             /* setup file that is being requested */
             File aResourceFile = new File(myFullResourcePath);
 
-            if (myFullResourcePath.endsWith(".class") && !aResourceFile.exists()) { //dynamic class execution
+            if (myFullResourcePath.endsWith(".class")) { //dynamic class execution
                 System.out.println("HTTP/1.1 200 OK");
                 myResponsePrintStream.println("HTTP/1.1 200 OK");
 
@@ -215,16 +215,22 @@ public class HTTPServer extends Thread {
 
                     System.out.println("DEBUG - error with exec");
                 }
-                //get and output process STDOUT buffer
-                BufferedReader aProcessStdOutput = new BufferedReader(new InputStreamReader(aProcess.getInputStream()));
-                char inputBuffer[] = new char[1024];
-                try {
-                    while (aProcessStdOutput.read(inputBuffer) > -1) {
-                        System.out.println(Integer.toHexString(inputBuffer.length));
-                        myResponsePrintStream.println(Integer.toHexString(inputBuffer.length));
 
-                        System.out.println(inputBuffer);
-                        myResponsePrintStream.println(inputBuffer);
+                //get and output process STDOUT buffer
+                DataInputStream aProcessStdBinOutput = new DataInputStream(aProcess.getInputStream()); //read raw binary data
+                BufferedReader aProcessStdErrorOutput = new BufferedReader(new InputStreamReader(aProcess.getErrorStream()));
+
+                byte inputBuffer[] = new byte[1024];
+                int inputBufferLen = 0;
+                try {
+                    while ((inputBufferLen = aProcessStdBinOutput.read(inputBuffer)) > -1) {
+                        System.out.println(Integer.toHexString(inputBufferLen));
+                        myResponsePrintStream.println(Integer.toHexString(inputBufferLen));
+
+                        System.out.write(inputBuffer, 0, inputBufferLen);
+                        System.out.println();
+                        myResponsePrintStream.write(inputBuffer, 0, inputBufferLen);
+                        myResponsePrintStream.println();
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(HTTPServer.class.getName()).log(Level.SEVERE, null, ex);
@@ -237,6 +243,16 @@ public class HTTPServer extends Thread {
 
                 System.out.println("0");
                 myResponsePrintStream.println("0");
+
+                //output any errors to debug terminal
+                String aErrorStr = null;
+                try {
+                    while ((aErrorStr = aProcessStdErrorOutput.readLine()) != null) {
+                        System.out.println("DEBUG - " + aErrorStr);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(HTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else if (myFullResourcePath.contains("csci4131")) {
                 System.out.println("HTTP/1.1 301 Moved Permanently");
                 myResponsePrintStream.println("HTTP/1.1 301 Moved Permanently");

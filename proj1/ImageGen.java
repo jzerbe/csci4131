@@ -1,8 +1,11 @@
 
 /**
  * simple class for reading and outputting a file to STDOUT
+ *
+ * went with DataOutputStream as it is made for dumping raw binary data does
+ * not screw up with LOCALE information
  */
-import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,11 +19,11 @@ public class ImageGen {
 
     protected static String myFileResourcePath = "webdir/input.jpeg";
     protected static FileInputStream myFileInputStream = null;
-    protected static BufferedOutputStream myBufferedOutputStream = null;
+    protected static DataOutputStream myDataOutputStream = null;
 
     public ImageGen() throws FileNotFoundException {
         myFileInputStream = new FileInputStream(myFileResourcePath);
-        myBufferedOutputStream = new BufferedOutputStream(System.out);
+        myDataOutputStream = new DataOutputStream(System.out);
     }
 
     public void bufferedWriteToStdOut() throws IOException {
@@ -29,17 +32,17 @@ public class ImageGen {
 
         do {
             bytesRead = myFileInputStream.read(buffer, 0, buffer.length);
-            myBufferedOutputStream.write(buffer, 0, bytesRead);
+            myDataOutputStream.write(buffer, 0, bytesRead);
         } while (bytesRead == buffer.length);
 
-        myBufferedOutputStream.flush();
+        myDataOutputStream.flush();
 
         if (myFileInputStream != null) {
             myFileInputStream.close();
         }
 
-        if (myBufferedOutputStream != null) {
-            myBufferedOutputStream.close();
+        if (myDataOutputStream != null) {
+            myDataOutputStream.close();
         }
     }
 

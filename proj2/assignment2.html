@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Simple Slide-Show</title>
+        <link rel="shortcut icon" id="favicon" type="image/x-icon" href="favicon.ico" />
+        <link rel="stylesheet" href="style.css" />
+        <meta name="author" content="Jason Zerbe" />
+        <meta name="robots" content="noindex,nofollow" />
+        <meta name="description" content="simple JavaScript based slide-show" />
+        <script type="text/javascript" src="script.js"></script>
+    </head>
+    <body>
+        <div id="headerControl">
+            <button onclick="loadIndexToEleId(0, 'displayWindow', 'none');">Start</button>
+            <button onclick="showInfo();">Display Information</button>
+            <button onclick="showStart();">Start Show</button>
+            <button onclick="showStop();">Stop Show</button><br />
+            <br />
+            Select Information Type:
+            <select onchange="loadInfoByIndexToEleId(-1, 'displayWindowInfo',
+                this.options[this.selectedIndex].value);" id="selectInfoType">
+                <option value="none">None</option>
+                <option value="Architect">Architect</option>
+                <option value="Description">Description</option>
+                <option value="Year">Year</option>
+            </select><br />
+            <br />
+            <div id="displayThumbs">&nbsp;</div>
+        </div>
+        <div id="displayWindow">
+            <button onclick="nextIndex('displayWindow');">Next</button>
+            <button onclick="prevIndex('displayWindow');">Previous</button>
+            <button onclick="displayNoneByEleId('displayWindow');">Close</button>
+            <div class="clear">&nbsp;</div>
+            <div id="displayWindowImg">&nbsp;</div>
+            <div id="displayWindowInfo">&nbsp;</div>
+            <div class="clear">&nbsp;</div>
+        </div>
+    </body>
+</html>

@@ -3,6 +3,14 @@
     margin: -10px;
 }
 
+#assetLoadFrame {
+    border: none;
+    display: none;
+    height: 0px;
+    margin: -10px;
+    width: 0px;
+}
+
 #displayWindow {
     background: gray;
     border: 1px dotted black;
@@ -24,5 +32,8 @@
 }
 #displayWindowInfo {
     float: right;
+    font-size: 20px;
+    font-weight: bold;
     margin-left: 5px;
+    max-width: 300px;
 }

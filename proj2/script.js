@@ -26,60 +26,50 @@ function toggleDisplayByEleId(theEleId) {
     }
 }
 
+function getCurrentIndex() {
+    return myCurrentIndex;
+}
+
 function loadImgByIndexToEleId(theIndex, theEleId) {
     var aImgLocation = "building_images/" + myLocationImages[theIndex];
     document.getElementById(theEleId).innerHTML = '<img src="'+aImgLocation+'" />';
 }
 
-function loadTextFileToArray(theInfoLocation) {
-    var xhr;
-    try {
-        xhr = new ActiveXObject('Msxml2.XMLHTTP');
-    } catch (e) {
-        try {
-            xhr = new ActiveXObject('Microsoft.XMLHTTP');
-        } catch (e2) {
-            try {
-                xhr = new XMLHttpRequest();
-            } catch (e3) {
-                xhr = false;
-            }
-        }
-    }
+function processIframeContent(theIframeName, theOutputObjId, theInfoType) {
+    var aIframeBody = window.frames[theIframeName].document.getElementsByTagName('body')[0];
+    var aIframeTextContent = aIframeBody.textContent;
+    if (aIframeTextContent === undefined) aIframeTextContent = aIframeBody.innerText;
 
-    xhr.onreadystatechange = function() {
-        if(xhr.readyState == 4) {
-            if(xhr.status == 200) {
-                return xhr.responseText.split("\\r?\\n");
-            }else {
-                return new Array();
-            }
-        } else {
-            return new Array();
-        }
-    };
+    var aTextArray = aIframeTextContent.split("\n");
+    var aInfoArray = aTextArray[getCurrentIndex()].split(": ");
 
-    xhr.open("GET", theInfoLocation,  false);
-    xhr.send(null);
+    var aCurrentOutputContent = document.getElementById(theOutputObjId).innerHTML;
+    document.getElementById(theOutputObjId).innerHTML = aCurrentOutputContent
+    + "<br />" + theInfoType + ": " + aInfoArray[1].trim();
 }
 
 function loadInfoByIndexToEleId(theIndex, theEleId, theInfoType) {
     if ((theIndex < 0) || (theIndex >= myLocationNames.lenth)) {
-        theIndex = myCurrentIndex;
+        theIndex = getCurrentIndex();
     }
 
     var aInfoLocation = "building_info/" + theInfoType.toLowerCase() + ".txt";
-    var aOutputHTML = myLocationNames[theIndex];
+    document.getElementById(theEleId).innerHTML = myLocationNames[theIndex];
 
     if ((theInfoType == 'Architect')
         || (theInfoType == 'Description')
         || (theInfoType == 'Year')) {
-        aOutputHTML = aOutputHTML + '<br />'
-        + theInfoType + ': '
-        + loadTextFileToArray(aInfoLocation)[theIndex].trim();
-    }
+        var aIframeLoaderEle = document.getElementById('assetLoadFrame');
+        aIframeLoaderEle.src = aInfoLocation;
 
-    document.getElementById(theEleId).innerHTML = aOutputHTML;
+        setTimeout(function(){
+            processIframeContent('assetLoadFrame', theEleId, theInfoType);
+        }, 500);
+    }
+}
+
+function showInfo() {
+    loadInfoByIndexToEleId(-1, 'displayWindowInfo', document.getElementById('selectInfoType').options[document.getElementById('selectInfoType').selectedIndex].value);
 }
 
 function getSelectValueByEleId(theEleId) {
@@ -101,9 +91,9 @@ function loadIndexToEleId(theIndex, theEleId) {
 }
 
 function nextIndex(theEleId) {
-    loadIndexToEleId(myCurrentIndex + 1, theEleId);
+    loadIndexToEleId(getCurrentIndex() + 1, theEleId);
 }
 
 function prevIndex(theEleId) {
-    loadIndexToEleId(myCurrentIndex - 1, theEleId);
+    loadIndexToEleId(getCurrentIndex() - 1, theEleId);
 }

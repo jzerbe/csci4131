@@ -12,9 +12,8 @@
     <body>
         <div id="headerControl">
             <button onclick="loadIndexToEleId(0, 'displayWindow', 'none');">Start</button>
-            <button onclick="showInfo();">Display Information</button>
-            <button onclick="showStart();">Start Show</button>
-            <button onclick="showStop();">Stop Show</button><br />
+            <button onclick="showStart('displayWindow');">Start Show</button>
+            <button onclick="showStop('displayWindow');">Stop Show</button><br />
             <br />
             Select Information Type:
             <select onchange="loadInfoByIndexToEleId(-1, 'displayWindowInfo',
@@ -28,6 +27,7 @@
             <div id="displayThumbs">&nbsp;</div>
         </div>
         <div id="displayWindow">
+            <button onclick="showInfo();">Display Information</button>
             <button onclick="nextIndex('displayWindow');">Next</button>
             <button onclick="prevIndex('displayWindow');">Previous</button>
             <button onclick="displayNoneByEleId('displayWindow');">Close</button>

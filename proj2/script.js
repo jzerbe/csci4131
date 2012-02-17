@@ -25,6 +25,7 @@ function displayBlockByEleId(theEleId) {
 }
 
 function displayNoneByEleId(theEleId) {
+    setThumbSelectedByIndex(-1);
     document.getElementById(theEleId).style.display = 'none';
 }
 
@@ -74,7 +75,7 @@ function loadInfoByIndexToEleId(theIndex, theEleId, theInfoType) {
 
         setTimeout(function(){
             processIframeContent('assetLoadFrame', theEleId, theInfoType);
-        }, 500);
+        }, 200);
     }
 }
 
@@ -130,5 +131,37 @@ function setThumbSelectedByIndex(theIndex) {
     for (aImageFileIndex in myLocationImages) {
         document.getElementById("displayThumbs").getElementsByTagName("img")[aImageFileIndex].style.border = 'none';
     }
-    document.getElementById("displayThumbs").getElementsByTagName("img")[theIndex].style.border = '2px solid red';
+    if ((0 <= theIndex) && (theIndex < myLocationNames.length)) {
+        document.getElementById("displayThumbs").getElementsByTagName("img")[theIndex].style.border = '2px solid red';
+    }
+}
+
+
+/**
+ * slide-show timed functions
+ */
+var mySlideShowIsRunning = false;
+function isSlideShowRunning() {
+    return mySlideShowIsRunning;
+}
+
+var myTimeOutObj;
+function showRun(theEleId) {
+    nextIndex(theEleId);
+    myTimeOutObj = setTimeout(function(){
+        showRun(theEleId);
+    }, 1000);
+}
+function showStart(theEleId) {
+    if (isSlideShowRunning()) {
+        alert("The slide show is already running!");
+    } else {
+        mySlideShowIsRunning = true;
+        myCurrentIndex = myCurrentIndex - 1;
+        showRun(theEleId);
+    }
+}
+function showStop() {
+    clearTimeout(myTimeOutObj);
+    mySlideShowIsRunning = false;
 }

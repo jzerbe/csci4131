@@ -11,6 +11,13 @@
     width: 0px;
 }
 
+#displayThumbs img {
+    display: inline;
+    margin: 0 5px;
+    height: 50px;
+    width: 50px;
+}
+
 #displayWindow {
     background: gray;
     border: 1px dotted black;
@@ -20,7 +27,7 @@
     min-width: 510px;
     padding: 5px;
     position: absolute;
-    top: 20%;
+    top: 25%;
     z-index: 50;
 }
 #displayWindowImg {

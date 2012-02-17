@@ -1,4 +1,10 @@
+/**
+ * globally applicable variables
+ */
 var myCurrentIndex = 0;
+function getCurrentIndex() {
+    return myCurrentIndex;
+}
 var myLocationNames = new Array("Armory", "Pillsbury Hall", "Folwell Hall",
     "Jones Hall", "Pillsbury Statue", "Wesbrook Hall", "Nicholson Hall",
     "Eddy Hall", "Music Education", "Wulling Hall");
@@ -10,6 +16,10 @@ String.prototype.trim = function() {
     return this.replace(/^\s+|\s+$/g, "");
 };
 
+
+/**
+ * utility functions
+ */
 function displayBlockByEleId(theEleId) {
     document.getElementById(theEleId).style.display = 'block';
 }
@@ -26,15 +36,10 @@ function toggleDisplayByEleId(theEleId) {
     }
 }
 
-function getCurrentIndex() {
-    return myCurrentIndex;
-}
 
-function loadImgByIndexToEleId(theIndex, theEleId) {
-    var aImgLocation = "building_images/" + myLocationImages[theIndex];
-    document.getElementById(theEleId).innerHTML = '<img src="'+aImgLocation+'" />';
-}
-
+/**
+ * functions for populating DOM with dynamically loaded content
+ */
 function processIframeContent(theIframeName, theOutputObjId, theInfoType) {
     var aIframeBody = window.frames[theIframeName].document.getElementsByTagName('body')[0];
     var aIframeTextContent = aIframeBody.textContent;
@@ -46,6 +51,11 @@ function processIframeContent(theIframeName, theOutputObjId, theInfoType) {
     var aCurrentOutputContent = document.getElementById(theOutputObjId).innerHTML;
     document.getElementById(theOutputObjId).innerHTML = aCurrentOutputContent
     + "<br />" + theInfoType + ": " + aInfoArray[1].trim();
+}
+
+function loadImgByIndexToEleId(theIndex, theEleId) {
+    var aImgLocation = "building_images/" + myLocationImages[theIndex];
+    document.getElementById(theEleId).innerHTML = '<img src="'+aImgLocation+'" />';
 }
 
 function loadInfoByIndexToEleId(theIndex, theEleId, theInfoType) {
@@ -69,11 +79,14 @@ function loadInfoByIndexToEleId(theIndex, theEleId, theInfoType) {
 }
 
 function showInfo() {
-    loadInfoByIndexToEleId(-1, 'displayWindowInfo', document.getElementById('selectInfoType').options[document.getElementById('selectInfoType').selectedIndex].value);
+    loadInfoByIndexToEleId(-1, 'displayWindowInfo',
+        document.getElementById('selectInfoType').options[
+        document.getElementById('selectInfoType').selectedIndex].value);
 }
 
 function getSelectValueByEleId(theEleId) {
-    return document.getElementById(theEleId).options[document.getElementById(theEleId).selectedIndex].value;
+    return document.getElementById(theEleId).options[
+    document.getElementById(theEleId).selectedIndex].value;
 }
 
 function loadIndexToEleId(theIndex, theEleId) {
@@ -82,8 +95,9 @@ function loadIndexToEleId(theIndex, theEleId) {
     } else if (theIndex >= myLocationNames.length) {
         theIndex = 0;
     }
-
     myCurrentIndex = theIndex;
+
+    setThumbSelectedByIndex(theIndex);
     loadImgByIndexToEleId(theIndex, theEleId+'Img');
     loadInfoByIndexToEleId(theIndex, theEleId+'Info',
         getSelectValueByEleId('selectInfoType'));
@@ -96,4 +110,25 @@ function nextIndex(theEleId) {
 
 function prevIndex(theEleId) {
     loadIndexToEleId(getCurrentIndex() - 1, theEleId);
+}
+
+function loadIndexOnThumbClick(theIndex) {
+    loadIndexToEleId(theIndex, 'displayWindow');
+}
+
+function loadThumbsToEleId(theEleId) {
+    var aReturnThumbHtml = "";
+    for (aImageFileIndex in myLocationImages) {
+        aReturnThumbHtml = aReturnThumbHtml
+        + "<img src='building_images/"+myLocationImages[aImageFileIndex]+"'"
+        +"onclick='loadIndexOnThumbClick("+aImageFileIndex+");' />";
+    }
+    document.getElementById(theEleId).innerHTML = aReturnThumbHtml;
+}
+
+function setThumbSelectedByIndex(theIndex) {
+    for (aImageFileIndex in myLocationImages) {
+        document.getElementById("displayThumbs").getElementsByTagName("img")[aImageFileIndex].style.border = 'none';
+    }
+    document.getElementById("displayThumbs").getElementsByTagName("img")[theIndex].style.border = '2px solid red';
 }

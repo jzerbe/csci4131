@@ -39,48 +39,52 @@ if ($aPhotoFile and $aPhotoText) { #process file upload
     <!DOCTYPE html>
     <html>
         <head>
-            <title>Photo Gallery</title>
+            <title>Simple Slide-Show</title>
+            <link rel="shortcut icon" id="favicon" type="image/x-icon" href="favicon.ico" />
+            <meta name="author" content="Jason Zerbe" />
             <meta name="robots" content="noindex,nofollow" />
-            <link rel="shortcut icon" href="./favicon.ico" />
+            <meta name="description" content="simple Perl and JavaScript photo gallery" />
+            <link rel="stylesheet" href="style.css" />
             <script type="text/javascript" src="script.js"></script>
-
-            <style type="text/css">
-                #divThumbTiles {
-                    border: 1px dotted black;
-                    margin: 2% 3%;
-                    padding: 5px 10px;
-                    width: 90%;
-                }
-                #formUpload {
-                    background: gray;
-                    border: 1px dotted black;
-                    display: none;
-                    left: 15%;
-                    padding: 2px 5px;
-                    position: absolute;
-                    top: 15%;
-                    width: 220px;
-                    z-index: 100;
-                }
-            </style>
         </head>
         <body>
         );
-    print '<form id="formUpload" method="post" action="' . url(-relative=>1) . '" enctype="multipart/form-data">' . "\n";
+    print '<form id="formUpload" method="post" action="'.url(-relative=>1)
+        .'" enctype="multipart/form-data" onsubmit="validateFileType(&quot;formUploadInputFile&quot;);">'."\n";
     print qq(<strong>Add Photo</strong> <button onclick="displayNoneByEleId('formUpload');">Close</button><br /><br />);
-    print '<input type="file" name="' . $kParamStrPhoto . '" /><br />' . "\n";
-    print '<input type="text" name="' . $kParamStrText . '" />';
+    print '<input id="formUploadInputFile" type="file" name="'.$kParamStrPhoto
+        .'" onblur="validateFileType(&quot;formUploadInputFile&quot;);" /><br />'."\n";
+    print '<input type="text" name="'.$kParamStrText.'" />';
     print qq(<input type="submit" value="Add" />
             </form>
-            <button onclick="displayBlockByEleId('formUpload');">Add Photo</button><br />
+            <button onclick="displayBlockByEleId('formUpload');">Add Photo</button>
+            <button onclick="showStart('displayWindow');">Start Show</button>
+            <button onclick="showStop('displayWindow');">Stop Show</button>
+
             <div id="divThumbTiles">);
 
     #get image list and text from database
     dbmopen(%myTextDbHash, $kParamStrDbFileName, 0755);
     close(%myTextDbHash);
     #output thumbnail tiles
+    my $aOutputCount = 0;
+    foreach my $aFileName (keys %myTextDbHash) {
+        print '<img id="aThumbImg'.$aOutputCount.'" onclick="loadIndexToEleId('.$aOutputCount
+            .', &quot;displayWindow&quot;);" src="'.$kParamStrUploadPath.'/'.$aFileName
+            .'" title="'.$myTextDbHash{$aFileName}.'" /></a>';
+        $aOutputCount++;
+    }
+    print '</div>';
+    print '<div id="aTotalImageCount" style="display: none;">'.$aOutputCount.'</div>';
 
-    print qq(
+    print qq(<div id="displayWindow">
+                <button onclick="nextIndex('displayWindow');">Next</button>
+                <button onclick="prevIndex('displayWindow');">Previous</button>
+                <button onclick="displayNoneByEleId('displayWindow');">Close</button>
+                <div class="clear">&nbsp;</div>
+                <div id="displayWindowImg">&nbsp;</div>
+                <div id="displayWindowInfo">&nbsp;</div>
+                <div class="clear">&nbsp;</div>
             </div>
         </body>
     </html>

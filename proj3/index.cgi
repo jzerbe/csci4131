@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/soft/perl5.8.7-bin/perl -w
 
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser);
@@ -9,7 +9,6 @@ my $myCgiObj = new CGI;
 my $kParamStrPhoto = "photo";
 my $kParamStrText = "text";
 my $kParamStrUploadPath = "MyPhotos";
-my %myTextDbHash;
 my $kParamStrDbFileName = "PhotoHashDb";
 
 
@@ -28,15 +27,15 @@ if ($aPhotoFile and $aPhotoText) { #process file upload
     }
     close(UPLOADFILE);
 
+    my %myTextDbHash;
     dbmopen(%myTextDbHash, $kParamStrDbFileName, 0755);
     $myTextDbHash{$aPhotoFile} = $aPhotoText;
     close(%myTextDbHash);
 
     print "Status: 302 Moved\nLocation: " . url(-relative=>1) . "\n\n";
 } else { #output main view
-    print qq(Content-type: text/html
-
-    <!DOCTYPE html>
+    print "Content-type: text/html\n\n";
+    print qq(<!DOCTYPE html>
     <html>
         <head>
             <title>Simple Slide-Show</title>
@@ -64,6 +63,7 @@ if ($aPhotoFile and $aPhotoText) { #process file upload
             <div id="divThumbTiles">);
 
     #get image list and text from database
+    my %myTextDbHash;
     dbmopen(%myTextDbHash, $kParamStrDbFileName, 0755);
     close(%myTextDbHash);
     #output thumbnail tiles
@@ -71,7 +71,7 @@ if ($aPhotoFile and $aPhotoText) { #process file upload
     foreach my $aFileName (keys %myTextDbHash) {
         print '<img id="aThumbImg'.$aOutputCount.'" onclick="loadIndexToEleId('.$aOutputCount
             .', &quot;displayWindow&quot;);" src="'.$kParamStrUploadPath.'/'.$aFileName
-            .'" title="'.$myTextDbHash{$aFileName}.'" /></a>';
+            .'" title="'.$myTextDbHash{$aFileName}.'" />';
         $aOutputCount++;
     }
     print '</div>';
@@ -87,6 +87,6 @@ if ($aPhotoFile and $aPhotoText) { #process file upload
                 <div class="clear">&nbsp;</div>
             </div>
         </body>
-    </html>
-    );
+    </html>);
+    print "\n";
 }

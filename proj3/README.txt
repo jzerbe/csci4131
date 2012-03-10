@@ -1,7 +1,7 @@
 Jason Zerbe
 3830775
 
-simple photomanager using Perl as back-end
+simple photomanager using Perl as back-end. for use on CSELabs webserver
 
-1) upload all files in chmod 755 directory
-2) chmod 755 index.cgi; chmod 644 favicon.ico; chmod 644 script.js; chmod 644 style.css
+1) upload all files in chmod 701 directory
+2) chmod 701 index.cgi; chmod 604 favicon.ico; chmod 604 script.js; chmod 604 style.css

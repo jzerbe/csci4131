@@ -31,8 +31,8 @@
 
 #divThumbTiles {
     border: 1px dotted black;
-    margin: 2% 3%;
-    width: 90%;
+    margin: 1% auto;
+    width: 97%;
 }
 #divThumbTiles img {
     border: none;

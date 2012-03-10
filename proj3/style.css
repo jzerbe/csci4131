@@ -3,6 +3,9 @@
     margin: -10px;
 }
 
+#buttonDelete {
+    float: right;
+}
 #displayWindow {
     background: gray;
     border: 1px dotted black;

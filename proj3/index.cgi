@@ -6,6 +6,7 @@ use File::Path qw(mkpath);
 use strict;
 
 my $myCgiObj = new CGI;
+my $kParamStrPhotoIndex = "pi";
 my $kParamStrPhoto = "photo";
 my $kParamStrText = "text";
 my $kParamStrUploadPath = "MyPhotos";
@@ -17,6 +18,7 @@ mkpath($kParamStrUploadPath);
 
 
 ### main logic
+my $aPhotoIndex = $myCgiObj->param($kParamStrPhotoIndex);
 my $aPhotoFile = $myCgiObj->param($kParamStrPhoto);
 my $aPhotoText = $myCgiObj->param($kParamStrText);
 if ($aPhotoFile and $aPhotoText) { #process file upload
@@ -30,6 +32,23 @@ if ($aPhotoFile and $aPhotoText) { #process file upload
     my %myTextDbHash;
     dbmopen(%myTextDbHash, $kParamStrDbFileName, 0755);
     $myTextDbHash{$aPhotoFile} = $aPhotoText;
+    close(%myTextDbHash);
+
+    print "Status: 302 Moved\nLocation: " . url(-relative=>1) . "\n\n";
+} elsif (defined($aPhotoIndex) and ($aPhotoIndex ne "")) { #delete a certain photo at given index
+    my %myTextDbHash;
+    dbmopen(%myTextDbHash, $kParamStrDbFileName, 0755);
+
+    my $aIndexCount = 0;
+    foreach my $aPhotoFileName (keys %myTextDbHash) {
+        if ($aPhotoIndex == $aIndexCount) {
+            unlink("$kParamStrUploadPath/$aPhotoFileName");
+            delete $myTextDbHash{$aPhotoFileName};
+            last;
+        }
+        $aIndexCount++;
+    }
+
     close(%myTextDbHash);
 
     print "Status: 302 Moved\nLocation: " . url(-relative=>1) . "\n\n";
@@ -68,19 +87,20 @@ if ($aPhotoFile and $aPhotoText) { #process file upload
     close(%myTextDbHash);
     #output thumbnail tiles
     my $aOutputCount = 0;
-    foreach my $aFileName (keys %myTextDbHash) {
+    foreach my $aPhotoFileName (keys %myTextDbHash) {
         print '<img id="aThumbImg'.$aOutputCount.'" onclick="loadIndexToEleId('.$aOutputCount
-            .', &quot;displayWindow&quot;);" src="'.$kParamStrUploadPath.'/'.$aFileName
-            .'" title="'.$myTextDbHash{$aFileName}.'" />';
+            .', &quot;displayWindow&quot;);" src="'.$kParamStrUploadPath.'/'.$aPhotoFileName
+            .'" title="'.$myTextDbHash{$aPhotoFileName}.'" />';
         $aOutputCount++;
     }
     print '</div>';
     print '<div id="aTotalImageCount" style="display: none;">'.$aOutputCount.'</div>';
-
+    my $aBaseDeletePathStr = url(-relative=>1) . "?$kParamStrPhotoIndex=";
     print qq(<div id="displayWindow">
-                <button onclick="nextIndex('displayWindow');">Next</button>
-                <button onclick="prevIndex('displayWindow');">Previous</button>
-                <button onclick="displayNoneByEleId('displayWindow');">Close</button>
+                <button id="buttonNext" onclick="nextIndex('displayWindow');">Next</button>
+                <button id="buttonPrev" onclick="prevIndex('displayWindow');">Previous</button>
+                <button id="buttonClose" onclick="displayNoneByEleId('displayWindow');">Close</button>
+                <button id="buttonDelete" onclick="deleteCurrentImage('$aBaseDeletePathStr');">Delete</button>
                 <div class="clear">&nbsp;</div>
                 <div id="displayWindowImg">&nbsp;</div>
                 <div id="displayWindowInfo">&nbsp;</div>

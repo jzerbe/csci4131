@@ -37,8 +37,12 @@ function toggleDisplayByEleId(theEleId) {
 
 
 /**
- * validation methods
+ * image management
 */
+function deleteCurrentImage(theBaseDeletePathStr) {
+    window.location = theBaseDeletePathStr+getCurrentIndex();;
+}
+
 function validateFileType(theEleId) {
     var aFileInputValue = document.getElementById(theEleId).value;
 

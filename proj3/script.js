@@ -40,7 +40,7 @@ function toggleDisplayByEleId(theEleId) {
  * image management
 */
 function deleteCurrentImage(theBaseDeletePathStr) {
-    window.location = theBaseDeletePathStr+getCurrentIndex();;
+    window.location = theBaseDeletePathStr+getCurrentIndex();
 }
 
 function validateFileType(theEleId) {

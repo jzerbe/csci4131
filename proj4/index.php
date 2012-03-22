@@ -31,12 +31,27 @@ mysql_query($aSqlCreateUsersTable, $myDbmsConn);
 ## MAIN LOGIC ###
 if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrComment])
         && isset($_FILES[$kRequestParamStrData])) { // store image
+    if ($_FILES[$kRequestParamStrData]['error'] == 0) {
+        $comment = real_escape_string($_POST[$kRequestParamStrComment], $myDbmsConn);
+        $data = real_escape_string(file_get_contents($_FILES[$kRequestParamStrData]['tmp_name']), $myDbmsConn);
+        $mime_type = real_escape_string($_FILES[$kRequestParamStrData]['type'], $myDbmsConn);
+
+        $aSqlInsertPhotoTuple = "INSERT INTO `$kTablePhotosStr` (`$kTablePhotosFieldCategoryStr`,"
+                . " `$kTablePhotosFieldCommentStr`, `$kTablePhotosFieldDataStr`,"
+                . " `$kTablePhotosFieldMimeTypeStr`) VALUES"
+                . " ('{$kTablePhotosFieldCategoryStr}', '{$comment}', '{$data}', '{$mime_type}')";
+        mysql_query($aSqlInsertPhotoTuple, $myDbmsConn) or die(mysql_error());
+    }
+
+    header("Status: 302 Moved\nLocation: " . $_SERVER['PHP_SELF'] . "\n\n");
 } elseif (isset($_POST[$kRequestParamStrDelete])) { // delete image
     $aImageIdEscaped = mysql_real_escape_string($aImageId, $myDbmsConn);
     $aSqlDeletePhoto = "DELETE FROM $kTablePhotosStr WHERE $kTablePhotosFieldIdStr='$aImageIdEscaped' LIMIT 1";
     mysql_query($aSqlDeletePhoto) or die(mysql_error());
     $aSqlOptimizePhotos = "OPTIMIZE TABLE $kTablePhotosStr";
     mysql_query($aSqlOptimizePhotos) or die(mysql_error());
+
+    header("Status: 302 Moved\nLocation: " . $_SERVER['PHP_SELF'] . "\n\n");
 } elseif (isset($_POST[$kRequestParamStrId])) { // display image
     $aImageId = $_POST[$kRequestParamStrId];
     if ($aImageId <= 0) {

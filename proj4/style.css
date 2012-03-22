@@ -1,0 +1,56 @@
+.clear {
+    clear: both;
+    margin: -10px;
+}
+
+#buttonDelete {
+    float: right;
+}
+#displayWindow {
+    background: gray;
+    border: 1px dotted black;
+    display: none;
+    left: 5%;
+    min-height: 310px;
+    min-width: 510px;
+    padding: 5px;
+    position: absolute;
+    top: 10%;
+    z-index: 50;
+}
+#displayWindowImg {
+    float: left;
+}
+#displayWindowImg img {
+    height: 500px;
+}
+#displayWindowInfo {
+    float: right;
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 5px;
+    max-width: 300px;
+}
+
+#divThumbTiles {
+    border: 1px dotted black;
+    margin: 1% auto;
+    width: 97%;
+}
+#divThumbTiles img {
+    border: none;
+    cursor: pointer;
+    height: 300px;
+    margin: 5px;
+}
+#formUpload {
+    background: gray;
+    border: 1px dotted black;
+    display: none;
+    left: 15%;
+    padding: 2px 5px;
+    position: absolute;
+    top: 15%;
+    width: 240px;
+    z-index: 100;
+}

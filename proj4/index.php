@@ -79,14 +79,18 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
 
             <div id="divThumbTiles">
                 <?php
-                $aSqlFetchPhotos = "SELECT ";
-                $result = mysql_query($query);
+                $aSqlFetchPhotoData = "SELECT $kTablePhotosFieldIdStr, "
+                        . "$kTablePhotosFieldCommentStr FROM $kTablePhotosStr";
+                $aPhotosQueryResult = mysql_query($aSqlFetchPhotoData) or die(mysql_error());
 
                 $myOutputCount = 0;
-                while ($myOutputCount < sizeof(array('test'))) {
-                    print '<img id="aThumbImg' . $i . '" onclick="loadIndexToEleId(' . $myOutputCount
-                            . ', &quot;displayWindow&quot;);" src="' . $kParamStrUploadPath . '/' . $aPhotoFileName
-                            . '" title="' . $myTextDbHash{$aPhotoFileName} . '" />';
+                while ($row = mysql_fetch_assoc($aPhotosQueryResult)) {
+                    echo '<img id="aThumbImg' . $row[$kTablePhotosFieldIdStr] . '" onclick="loadIndexToEleId('
+                    . $row[$kTablePhotosFieldIdStr] . ', &quot;displayWindow&quot;);" src="'
+                    . $_SERVER['PHP_SELF'] . '?' . $kRequestParamStrId
+                    . '=' . $row[$kTablePhotosFieldIdStr] . '" title="'
+                    . $row[$kTablePhotosFieldCommentStr] . '" />';
+
                     $myOutputCount++;
                 }
                 ?>

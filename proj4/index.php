@@ -11,6 +11,10 @@ $kRequestParamStrComment = "comment";
 $kRequestParamStrData = "data";
 $kRequestParamStrDelete = "delete";
 
+// cookie constants - see README for weak auth warning
+$kCookieUserNameStr = "pg_username";
+$kCookieLoginHashStr = "pg_loginhash";
+
 // connect to DBMS
 require("dbms_config.php");
 $myDbmsConn = mysql_connect($kDbmsHostName, $kDbmsDbUserName, $kDbmsDbUserPass) or die(mysql_error());
@@ -79,6 +83,32 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
         header("Content-Type: " . $aPhotoData[$kTablePhotosFieldMimeTypeStr]);
         echo $aPhotoData[$kTablePhotosFieldDataStr];
     }
+} else if (isset($_POST[$kCookieUserNameStr]) && isset($_POST[$kCookieLoginHashStr])) {
+    $aExpiryTime = time() + 60 * 3; // 3 minute expiry since set
+    setcookie($kCookieUserNameStr, $_POST[$kCookieUserNameStr], $aExpiryTime);
+    setcookie($kCookieLoginHashStr, $_POST[$kCookieLoginHashStr], $aExpiryTime);
+
+    header("Location: " . $_SERVER['PHP_SELF']);
+} else if (!isset($_COOKIE[$kCookieUserNameStr]) || !isset($_COOKIE[$kCookieLoginHashStr])) { // need to auth
+    ?>
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <title>photo gallery</title>
+            <link rel="shortcut icon" id="favicon" type="image/x-icon" href="favicon.ico" />
+            <meta name="author" content="Jason Zerbe" />
+            <meta name="robots" content="noindex,nofollow" />
+            <meta name="description" content="simple PHP-MySQL and JavaScript photo gallery" />
+        </head>
+        <body>
+            <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                <input type="text" name="<?php echo $kCookieUserNameStr; ?>" value="username" />
+                <input type="password" name="<?php echo $kCookieLoginHashStr; ?>" value="password" />
+                <input type="submit" value="Login" />
+            </form>
+        </body>
+    </html>
+    <?php
 } else { // display main UI
     ?>
     <!DOCTYPE html>
@@ -88,7 +118,7 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
             <link rel="shortcut icon" id="favicon" type="image/x-icon" href="favicon.ico" />
             <meta name="author" content="Jason Zerbe" />
             <meta name="robots" content="noindex,nofollow" />
-            <meta name="description" content="simple PHP/MySQL and JavaScript photo gallery" />
+            <meta name="description" content="simple PHP-MySQL and JavaScript photo gallery" />
             <link rel="stylesheet" href="style.css" />
             <script type="text/javascript" src="script.js"></script>
         </head>

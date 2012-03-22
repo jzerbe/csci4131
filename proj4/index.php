@@ -1,7 +1,12 @@
 <?php
+/**
+ * mysql_escape_string is deprecated as of PHP 5.3.0 and should be
+ * replaced with mysql_real_escape_string in the future
+ */
 // page constants
 $kRequestParamStrId = "id";
 $kRequestParamStrCategory = "category";
+$kCategoryStrArray = array('work', 'friends', 'sports', 'nature', 'school');
 $kRequestParamStrComment = "comment";
 $kRequestParamStrData = "data";
 $kRequestParamStrDelete = "delete";
@@ -32,32 +37,40 @@ mysql_query($aSqlCreateUsersTable, $myDbmsConn);
 if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrComment])
         && isset($_FILES[$kRequestParamStrData])) { // store image
     if ($_FILES[$kRequestParamStrData]['error'] == 0) {
-        $comment = real_escape_string($_POST[$kRequestParamStrComment], $myDbmsConn);
-        $data = real_escape_string(file_get_contents($_FILES[$kRequestParamStrData]['tmp_name']), $myDbmsConn);
-        $mime_type = real_escape_string($_FILES[$kRequestParamStrData]['type'], $myDbmsConn);
+        $category = mysql_escape_string($_POST[$kRequestParamStrCategory]);
+        $comment = mysql_escape_string($_POST[$kRequestParamStrComment]);
+        $data = mysql_escape_string(file_get_contents($_FILES[$kRequestParamStrData]['tmp_name']));
+        $mime_type = mysql_escape_string($_FILES[$kRequestParamStrData]['type']);
 
         $aSqlInsertPhotoTuple = "INSERT INTO `$kTablePhotosStr` (`$kTablePhotosFieldCategoryStr`,"
                 . " `$kTablePhotosFieldCommentStr`, `$kTablePhotosFieldDataStr`,"
                 . " `$kTablePhotosFieldMimeTypeStr`) VALUES"
-                . " ('{$kTablePhotosFieldCategoryStr}', '{$comment}', '{$data}', '{$mime_type}')";
+                . " ('{$category}', '{$comment}', '{$data}', '{$mime_type}')";
         mysql_query($aSqlInsertPhotoTuple, $myDbmsConn) or die(mysql_error());
     }
 
-    header("Status: 302 Moved\nLocation: " . $_SERVER['PHP_SELF'] . "\n\n");
-} elseif (isset($_POST[$kRequestParamStrDelete])) { // delete image
-    $aImageIdEscaped = mysql_real_escape_string($aImageId, $myDbmsConn);
-    $aSqlDeletePhoto = "DELETE FROM $kTablePhotosStr WHERE $kTablePhotosFieldIdStr='$aImageIdEscaped' LIMIT 1";
-    mysql_query($aSqlDeletePhoto) or die(mysql_error());
-    $aSqlOptimizePhotos = "OPTIMIZE TABLE $kTablePhotosStr";
-    mysql_query($aSqlOptimizePhotos) or die(mysql_error());
-
-    header("Status: 302 Moved\nLocation: " . $_SERVER['PHP_SELF'] . "\n\n");
-} elseif (isset($_POST[$kRequestParamStrId])) { // display image
-    $aImageId = $_POST[$kRequestParamStrId];
+    header("Location: " . $_SERVER['PHP_SELF']);
+} elseif (isset($_GET[$kRequestParamStrDelete])) { // delete image
+    $aImageId = $_GET[$kRequestParamStrDelete];
+    $aImageId = $aImageId + 1;
     if ($aImageId <= 0) {
         die('invalid Image Id');
     } else {
-        $aImageIdEscaped = mysql_real_escape_string($aImageId, $myDbmsConn);
+        $aImageIdEscaped = mysql_escape_string($aImageId);
+        $aSqlDeletePhoto = "DELETE FROM $kTablePhotosStr WHERE $kTablePhotosFieldIdStr='$aImageIdEscaped' LIMIT 1";
+        mysql_query($aSqlDeletePhoto) or die(mysql_error());
+        $aSqlOptimizePhotos = "OPTIMIZE TABLE $kTablePhotosStr";
+        mysql_query($aSqlOptimizePhotos) or die(mysql_error());
+    }
+
+    header("Location: " . $_SERVER['PHP_SELF']);
+} elseif (isset($_GET[$kRequestParamStrId])) { // display image
+    $aImageId = $_GET[$kRequestParamStrId];
+    $aImageId = $aImageId + 1;
+    if ($aImageId <= 0) {
+        die('invalid Image Id');
+    } else {
+        $aImageIdEscaped = mysql_escape_string($aImageId);
         $aSqlFetchPhotoData = "SELECT $kTablePhotosFieldDataStr, "
                 . "$kTablePhotosFieldMimeTypeStr FROM $kTablePhotosStr WHERE "
                 . "$kTablePhotosFieldIdStr='$aImageIdEscaped' LIMIT 1";
@@ -85,6 +98,13 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
                 <strong>Add Photo</strong> <button onclick="displayNoneByEleId('formUpload');">Close</button><br /><br />
                 <input id="formUploadInputFile" type="file" name="<?php echo $kRequestParamStrData; ?>"
                        onblur="validateFileType('formUploadInputFile');" /><br />
+                <select name="<?php echo $kRequestParamStrCategory; ?>">
+                    <?php
+                    foreach ($kCategoryStrArray as $kCategoryStr) {
+                        echo "<option>$kCategoryStr</option>";
+                    }
+                    ?>
+                </select><br />
                 <input type="text" name="<?php echo $kRequestParamStrComment; ?>" placeholder="photo comment" />
                 <input type="submit" value="Add" />
             </form>
@@ -94,17 +114,17 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
 
             <div id="divThumbTiles">
                 <?php
-                $aSqlFetchPhotoData = "SELECT $kTablePhotosFieldIdStr, "
-                        . "$kTablePhotosFieldCommentStr FROM $kTablePhotosStr";
+                $aSqlFetchPhotoData = "SELECT $kTablePhotosFieldIdStr, $kTablePhotosFieldCategoryStr,"
+                        . " $kTablePhotosFieldCommentStr FROM $kTablePhotosStr";
                 $aPhotosQueryResult = mysql_query($aSqlFetchPhotoData) or die(mysql_error());
 
                 $myOutputCount = 0;
                 while ($row = mysql_fetch_assoc($aPhotosQueryResult)) {
-                    echo '<img id="aThumbImg' . $row[$kTablePhotosFieldIdStr] . '" onclick="loadIndexToEleId('
-                    . $row[$kTablePhotosFieldIdStr] . ', &quot;displayWindow&quot;);" src="'
+                    echo '<img id="aThumbImg' . ($row[$kTablePhotosFieldIdStr] - 1) . '" onclick="loadIndexToEleId('
+                    . ($row[$kTablePhotosFieldIdStr] - 1) . ', &quot;displayWindow&quot;);" src="'
                     . $_SERVER['PHP_SELF'] . '?' . $kRequestParamStrId
-                    . '=' . $row[$kTablePhotosFieldIdStr] . '" title="'
-                    . $row[$kTablePhotosFieldCommentStr] . '" />';
+                    . '=' . ($row[$kTablePhotosFieldIdStr] - 1) . '" title="'
+                    . $row[$kTablePhotosFieldCategoryStr] . ' : ' . $row[$kTablePhotosFieldCommentStr] . '" />';
 
                     $myOutputCount++;
                 }

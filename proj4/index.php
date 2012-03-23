@@ -12,6 +12,8 @@ $kRequestParamStrData = "data";
 $kRequestParamStrDelete = "delete";
 
 // cookie constants - see README for weak auth warning
+$kDefaultUserNameStr = "username";
+$kDefaultLoginHashStr = "password"; //need to make hash in future?
 $kCookieUserNameStr = "pg_username";
 $kCookieLoginHashStr = "pg_loginhash";
 
@@ -28,14 +30,32 @@ $aSqlCreatePhotosTable = "CREATE TABLE IF NOT EXISTS `$kTablePhotosStr` ("
         . " `$kTablePhotosFieldDataStr` LONGBLOB NOT NULL ,"
         . " `$kTablePhotosFieldMimeTypeStr` TEXT NOT NULL"
         . " ) ENGINE = MYISAM";
-mysql_query($aSqlCreatePhotosTable, $myDbmsConn);
+mysql_query($aSqlCreatePhotosTable, $myDbmsConn) or die(mysql_error());
 $aSqlCreateUsersTable = "CREATE TABLE IF NOT EXISTS `$kTableUsersStr` ("
-        . " `$kTableUsersFieldIdStr` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,"
-        . " `$kTableUsersFieldUserNameStr` TEXT NOT NULL ,"
-        . " `$kTableUsersFieldLoginHashStr` TEXT NOT NULL"
-        . " ) ENGINE = MYISAM";
-mysql_query($aSqlCreateUsersTable, $myDbmsConn);
+        . "`$kTableUsersFieldUserNameStr` VARCHAR( 200 ) NOT NULL ,"
+        . "`$kTableUsersFieldLoginHashStr` VARCHAR( 200 ) NOT NULL ,"
+        . "PRIMARY KEY (  `$kTableUsersFieldUserNameStr` )"
+        . ") ENGINE = MYISAM";
+mysql_query($aSqlCreateUsersTable, $myDbmsConn) or die(mysql_error());
+$aSqlCreateDefaultUserTuple = "INSERT INTO $kTableUsersStr ($kTableUsersFieldUserNameStr,"
+        . " $kTableUsersFieldLoginHashStr) VALUES ('$kDefaultUserNameStr', '$kDefaultLoginHashStr')"
+        . " ON DUPLICATE KEY UPDATE $kTableUsersFieldLoginHashStr='$kDefaultLoginHashStr'";
+mysql_query($aSqlCreateDefaultUserTuple, $myDbmsConn) or die(mysql_error());
 
+function isValidLogin($theUserName, $theLoginHash) {
+    global $myDbmsConn, $kTableUsersStr, $kTableUsersFieldUserNameStr, $kTableUsersFieldLoginHashStr;
+    $theUserName = mysql_escape_string($theUserName);
+    $theLoginHash = mysql_escape_string($theLoginHash);
+    $aSqlValidateUser = "SELECT COUNT(*) FROM $kTableUsersStr WHERE $kTableUsersFieldUserNameStr='$theUserName'"
+            . " AND $kTableUsersFieldLoginHashStr='$theLoginHash' LIMIT 1";
+    $aLoginCountResult = mysql_query($aSqlValidateUser, $myDbmsConn) or die(mysql_error());
+    $aLoginMatchCount = mysql_result($aLoginCountResult, 0) or die(mysql_error());
+    if ($aLoginMatchCount == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 ## MAIN LOGIC ###
 if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrComment])
@@ -84,9 +104,11 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
         echo $aPhotoData[$kTablePhotosFieldDataStr];
     }
 } else if (isset($_POST[$kCookieUserNameStr]) && isset($_POST[$kCookieLoginHashStr])) {
-    $aExpiryTime = time() + 60 * 3; // 3 minute expiry since set
-    setcookie($kCookieUserNameStr, $_POST[$kCookieUserNameStr], $aExpiryTime);
-    setcookie($kCookieLoginHashStr, $_POST[$kCookieLoginHashStr], $aExpiryTime);
+    if (isValidLogin($_POST[$kCookieUserNameStr], $_POST[$kCookieLoginHashStr])) {
+        $aExpiryTime = time() + 60 * 3; // 3 minute expiry since set
+        setcookie($kCookieUserNameStr, $_POST[$kCookieUserNameStr], $aExpiryTime);
+        setcookie($kCookieLoginHashStr, $_POST[$kCookieLoginHashStr], $aExpiryTime);
+    }
 
     header("Location: " . $_SERVER['PHP_SELF']);
 } else if (!isset($_COOKIE[$kCookieUserNameStr]) || !isset($_COOKIE[$kCookieLoginHashStr])) { // need to auth
@@ -102,8 +124,10 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
         </head>
         <body>
             <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-                <input type="text" name="<?php echo $kCookieUserNameStr; ?>" value="username" />
-                <input type="password" name="<?php echo $kCookieLoginHashStr; ?>" value="password" />
+                <input type="text" name="<?php echo $kCookieUserNameStr; ?>"
+                       value="<?php echo $kDefaultUserNameStr; ?>" />
+                <input type="password" name="<?php echo $kCookieLoginHashStr; ?>"
+                       value="<?php echo $kDefaultLoginHashStr; ?>" />
                 <input type="submit" value="Login" />
             </form>
         </body>

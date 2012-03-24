@@ -134,6 +134,10 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
     </html>
     <?php
 } else { // display main UI
+    $category = "";
+    if (isset($_GET[$kRequestParamStrCategory])) {
+        $category = $_GET[$kRequestParamStrCategory];
+    }
     ?>
     <!DOCTYPE html>
     <html>
@@ -145,6 +149,13 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
             <meta name="description" content="simple PHP-MySQL and JavaScript photo gallery" />
             <link rel="stylesheet" href="style.css" />
             <script type="text/javascript" src="script.js"></script>
+            <script type="text/javascript">
+                function updateFilter(theSelectObj) {
+                    var aSelectValue = theSelectObj.options[theSelectObj.selectedIndex].value;
+                    window.location = "<?php echo $_SERVER['PHP_SELF']; ?>?"
+                        +"<?php echo $kRequestParamStrCategory; ?>="+aSelectValue;
+                }
+            </script>
         </head>
         <body>
             <form id="formUpload" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>"
@@ -154,8 +165,8 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
                        onblur="validateFileType('formUploadInputFile');" /><br />
                 <select name="<?php echo $kRequestParamStrCategory; ?>">
                     <?php
-                    foreach ($kCategoryStrArray as $kCategoryStr) {
-                        echo "<option>$kCategoryStr</option>";
+                    foreach ($kCategoryStrArray as $aCategoryStr) {
+                        echo "<option>$aCategoryStr</option>";
                     }
                     ?>
                 </select><br />
@@ -166,13 +177,30 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
             <button onclick="showStart('displayWindow');">Start Show</button>
             <button onclick="showStop('displayWindow');">Stop Show</button>
 
+            <select id="selectFilterCategory" onblur="updateFilter(this);" title="category filter">
+                <?php
+                array_unshift($kCategoryStrArray, "");
+                foreach ($kCategoryStrArray as $aCategoryStr) {
+                    if ($aCategoryStr == $category) {
+                        echo "<option selected='selected'>$aCategoryStr</option>";
+                    } else {
+                        echo "<option>$aCategoryStr</option>";
+                    }
+                }
+                ?>
+            </select>
+
             <div id="divThumbTiles">
                 <?php
                 $aSqlFetchPhotoData = "SELECT $kTablePhotosFieldIdStr, $kTablePhotosFieldCategoryStr,"
                         . " $kTablePhotosFieldCommentStr FROM $kTablePhotosStr";
+                if ($category != "") {
+                    $category = mysql_escape_string($category);
+                    $aSqlFetchPhotoData .= " WHERE $kTablePhotosFieldCategoryStr='$category'";
+                }
                 $aPhotosQueryResult = mysql_query($aSqlFetchPhotoData) or die(mysql_error());
 
-                $myOutputCount = 0;
+                $myOutputIndexes = "";
                 while ($row = mysql_fetch_assoc($aPhotosQueryResult)) {
                     echo '<img id="aThumbImg' . ($row[$kTablePhotosFieldIdStr] - 1) . '" onclick="loadIndexToEleId('
                     . ($row[$kTablePhotosFieldIdStr] - 1) . ', &quot;displayWindow&quot;);" src="'
@@ -180,11 +208,12 @@ if (isset($_POST[$kRequestParamStrCategory]) && isset($_POST[$kRequestParamStrCo
                     . '=' . ($row[$kTablePhotosFieldIdStr] - 1) . '" title="'
                     . $row[$kTablePhotosFieldCategoryStr] . ' : ' . $row[$kTablePhotosFieldCommentStr] . '" />';
 
-                    $myOutputCount++;
+                    $myOutputIndexes .= ($row[$kTablePhotosFieldIdStr] - 1) . ",";
                 }
+                $myOutputIndexes = rtrim($myOutputIndexes, ",");
                 ?>
             </div>
-            <div id="aTotalImageCount" style="display: none;"><?php echo $myOutputCount; ?></div>
+            <div id="aImageIndexes" style="display: none;"><?php echo $myOutputIndexes; ?></div>
             <?php $aBaseDeletePathStr = $_SERVER['PHP_SELF'] . "?$kRequestParamStrDelete="; ?>
             <div id="displayWindow">
                 <button id="buttonNext" onclick="nextIndex('displayWindow');">Next</button>

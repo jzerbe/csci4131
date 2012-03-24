@@ -5,8 +5,16 @@ var myCurrentIndex = 0;
 function getCurrentIndex() {
     return myCurrentIndex;
 }
-function getMaxIndex() {
-    return (document.getElementById('aTotalImageCount').innerHTML - 1);
+function getIndexArray() {
+    return document.getElementById('aImageIndexes').innerHTML.split(",");
+}
+function getValidLowValue() {
+    var aValidIndexArray = getIndexArray();
+    return parseInt(aValidIndexArray[0]);
+}
+function getValidHighValue() {
+    var aValidIndexArray = getIndexArray();
+    return parseInt(aValidIndexArray[(aValidIndexArray.length - 1)]);
 }
 
 String.prototype.trim = function() {
@@ -65,20 +73,32 @@ function validateFileType(theEleId) {
  */
 var kThumbImgPrefixStr = 'aThumbImg';
 
+function isIndexValid(theIndex) {
+    for (var i in getIndexArray()) {
+        if (i == theIndex) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function setThumbSelectedByIndex(theIndex) {
-    for (var i = 0; i <= getMaxIndex(); i++) {
+    for (var i = getValidLowValue(); i <= getValidHighValue(); i++) {
         document.getElementById(kThumbImgPrefixStr+i).style.border = 'none';
     }
-    if ((0 <= theIndex) && (theIndex <= getMaxIndex())) {
+    if (isIndexValid(theIndex)) {
         document.getElementById(kThumbImgPrefixStr+theIndex).style.border = '2px solid red';
     }
 }
 
 function loadIndexToEleId(theIndex, theEleId) {
-    if (theIndex < 0) {
-        theIndex = getMaxIndex();
-    } else if (theIndex > getMaxIndex()) {
-        theIndex = 0;
+    var aValidLowValue = getValidLowValue();
+    var aValidHighValue = getValidHighValue();
+
+    if (theIndex < aValidLowValue) {
+        theIndex = aValidHighValue;
+    } else if (theIndex > aValidHighValue) {
+        theIndex = aValidLowValue;
     }
     myCurrentIndex = theIndex;
 

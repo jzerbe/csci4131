@@ -3,10 +3,11 @@
 /**
  * DBMS constants
  */
-$kDbmsHostName = "localhost";
-$kDbmsDbUserName = "ass4";
-$kDbmsDbUserPass = "ass4";
-$kDbmsDbName = "ass4";
+$kDbmsHostName = "egon.cs.umn.edu";
+$kDbmsHostPort = "3307";
+$kDbmsDbUserName = "C4131S12U105";
+$kDbmsDbUserPass = "13347";
+$kDbmsDbName = "C4131S12U105";
 
 $kTablePhotosStr = "Photos";
 $kTablePhotosFieldIdStr = "id";

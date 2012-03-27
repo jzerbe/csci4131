@@ -19,7 +19,7 @@ $kCookieLoginHashStr = "pg_loginhash";
 
 // connect to DBMS
 require("dbms_config.php");
-$myDbmsConn = mysql_connect($kDbmsHostName, $kDbmsDbUserName, $kDbmsDbUserPass) or die(mysql_error());
+$myDbmsConn = mysql_connect("$kDbmsHostName:$kDbmsHostPort", $kDbmsDbUserName, $kDbmsDbUserPass) or die(mysql_error());
 mysql_select_db($kDbmsDbName, $myDbmsConn) or die(mysql_error());
 
 // setup Tables if not already exist

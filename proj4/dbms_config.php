@@ -17,7 +17,6 @@ $kTablePhotosFieldDataStr = "data";
 $kTablePhotosFieldMimeTypeStr = "mime_type";
 
 $kTableUsersStr = "Users";
-$kTableUsersFieldIdStr = "id";
 $kTableUsersFieldUserNameStr = "user_name";
 $kTableUsersFieldLoginHashStr = "login_hash";
 ?>

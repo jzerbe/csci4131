@@ -6,7 +6,8 @@ function getCurrentIndex() {
     return myCurrentIndex;
 }
 function getIndexArray() {
-    return document.getElementById('aImageIndexes').innerHTML.split(",");
+    var aIndexArray = document.getElementById('aImageIndexes').innerHTML.split(",");
+    return aIndexArray;
 }
 function getValidLowValue() {
     var aValidIndexArray = getIndexArray();
@@ -74,8 +75,10 @@ function validateFileType(theEleId) {
 var kThumbImgPrefixStr = 'aThumbImg';
 
 function isIndexValid(theIndex) {
-    for (var i in getIndexArray()) {
-        if (i == theIndex) {
+    var aIndexArray = getIndexArray();
+    for (var i in aIndexArray) {
+        var value = aIndexArray[i];
+        if (value == theIndex) {
             return true;
         }
     }
@@ -83,8 +86,10 @@ function isIndexValid(theIndex) {
 }
 
 function setThumbSelectedByIndex(theIndex) {
-    for (var i = getValidLowValue(); i <= getValidHighValue(); i++) {
-        document.getElementById(kThumbImgPrefixStr+i).style.border = 'none';
+    var aIndexArray = getIndexArray();
+    for (var i in aIndexArray) {
+        var value = aIndexArray[i];
+        document.getElementById(kThumbImgPrefixStr+value).style.border = 'none';
     }
     if (isIndexValid(theIndex)) {
         document.getElementById(kThumbImgPrefixStr+theIndex).style.border = '2px solid red';
@@ -94,11 +99,23 @@ function setThumbSelectedByIndex(theIndex) {
 function loadIndexToEleId(theIndex, theEleId) {
     var aValidLowValue = getValidLowValue();
     var aValidHighValue = getValidHighValue();
+    var isIncreasing = true;
+    if (theIndex < getCurrentIndex()) {
+        isIncreasing = false;
+    }
 
-    if (theIndex < aValidLowValue) {
-        theIndex = aValidHighValue;
-    } else if (theIndex > aValidHighValue) {
-        theIndex = aValidLowValue;
+    while (!isIndexValid(theIndex)) {
+        if (isIncreasing) {
+            theIndex++;
+        } else {
+            theIndex--;
+        }
+
+        if (theIndex < aValidLowValue) {
+            theIndex = aValidHighValue;
+        } else if (theIndex > aValidHighValue) {
+            theIndex = aValidLowValue;
+        }
     }
     myCurrentIndex = theIndex;
 

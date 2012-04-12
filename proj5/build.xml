@@ -1,0 +1,88 @@
+
+<project name="proj5" default="compile-source" basedir=".">
+    <description>
+        ant buildfile for the proj5 server-side Java code
+    </description>
+
+    <!-- directories and files -->
+    <property name="docs.dir" location="docs" />
+    <property name="src.dir" location="src" />
+    <property name="war.dir" location="war" />
+    <property name="war.file" location="proj5.war" />
+    <property name="web.dir" location="web" />
+    <property name="web.inf.constant" value="WEB-INF" />
+
+    <!-- new forked jvm settings -->
+    <property name="init.mem.size" value="128m" />
+    <property name="max.mem.size" value="256m" />
+
+    <!-- javac properties -->
+    <property name="javac.debug" value="true" />
+    <property name="javac.fork" value="true" />
+    <property name="javac.optimize" value="true" />
+    <property name="jdk-version.source" value="1.5" />
+    <property name="jdk-version.target" value="1.5" />
+
+    <!-- javadoc props -->
+    <property name="component.title" value="proj5" />
+
+
+    <target name="copystatic" description="copy WEB-INF and static files into WAR">
+        <mkdir dir="${war.dir}" />
+        <copy todir="${war.dir}">
+            <fileset dir="${web.dir}" />
+        </copy>
+        <copy todir="${war.dir}/${web.inf.constant}">
+            <fileset dir="${web.inf.constant}" />
+        </copy>
+    </target>
+
+    <target name="compile-source" depends="copystatic"
+    description="compile the source classes">
+        <mkdir dir="${war.dir}/${web.inf.constant}/classes" />
+
+        <path id="compile-source.classpath">
+            <fileset dir="${war.dir}/${web.inf.constant}/lib">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="war-no-include">
+                <include name="*.jar" />
+            </fileset>
+        </path>
+
+        <javac fork="${javac.fork}" srcdir="${src.dir}"
+        destdir="${war.dir}/${web.inf.constant}/classes" debug="${javac.debug}"
+        memoryinitialsize="${init.mem.size}" memorymaximumsize="${max.mem.size}"
+        target="${jdk-version.target}" source="${jdk-version.source}"
+        optimize="${javac.optimize}" classpathref="compile-source.classpath">
+            <compilerarg value="-Xlint" />
+        </javac>
+    </target>
+
+    <target name="javadoc" description="create component docs">
+        <!-- keep docs fresh -->
+        <delete dir="${docs.dir}" />
+        <mkdir dir="${docs.dir}" />
+
+        <!-- build the component docs, ${component.*} is predefined -->
+        <javadoc author="true" bottom="${component.title}" destdir="${docs.dir}"
+        source="${jdk-version.source}" doctitle="${component.title}"
+        packagenames="*" access="protected" sourcepath="${src.dir}"
+        version="true" windowtitle="${component.title}">
+        </javadoc>
+    </target>
+
+    <target name="war" depends="compile-source">
+        <war destfile="${war.file}" webxml="${war.dir}/${web.inf.constant}/web.xml">
+            <fileset dir="${war.dir}"/>
+            <lib dir="${war.dir}/${web.inf.constant}/lib"/>
+            <classes dir="${war.dir}/${web.inf.constant}/classes"/>
+        </war>
+    </target>
+
+    <target name="clean">
+        <delete dir="${docs.dir}" />
+        <delete dir="${war.dir}" />
+        <delete file="${war.file}" />
+    </target>
+</project>

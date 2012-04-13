@@ -42,9 +42,6 @@
         <mkdir dir="${war.dir}/${web.inf.constant}/classes" />
 
         <path id="compile-source.classpath">
-            <fileset dir="${war.dir}/${web.inf.constant}/lib">
-                <include name="*.jar" />
-            </fileset>
             <fileset dir="war-no-include">
                 <include name="*.jar" />
             </fileset>
@@ -75,7 +72,6 @@
     <target name="war" depends="compile-source">
         <war destfile="${war.file}" webxml="${war.dir}/${web.inf.constant}/web.xml">
             <fileset dir="${war.dir}"/>
-            <lib dir="${war.dir}/${web.inf.constant}/lib"/>
             <classes dir="${war.dir}/${web.inf.constant}/classes"/>
         </war>
     </target>

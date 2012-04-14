@@ -16,12 +16,6 @@
                     <encoding>windows-1252</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>src</label>
-                    <type>java</type>
-                    <location>src</location>
-                    <encoding>windows-1252</encoding>
-                </source-folder>
-                <source-folder>
                     <label>web</label>
                     <type>doc_root</type>
                     <location>web</location>
@@ -30,6 +24,12 @@
                     <label>WEB-INF</label>
                     <type>web_inf</type>
                     <location>WEB-INF</location>
+                </source-folder>
+                <source-folder>
+                    <label>src</label>
+                    <type>java</type>
+                    <location>src</location>
+                    <encoding>windows-1252</encoding>
                 </source-folder>
             </folders>
             <ide-actions>
@@ -77,7 +77,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">war-no-include/jsp-api.jar;war-no-include/servlet-api.jar</classpath>
+                <classpath mode="compile">war-no-include/jsp-api.jar;war-no-include/servlet-api.jar;WEB-INF/lib/horrorss-2.0.0.jar;WEB-INF/lib/sparta.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

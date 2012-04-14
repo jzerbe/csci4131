@@ -6,14 +6,14 @@ package constants;
 /**
  * @author Jason Zerbe
  */
-public interface SearchParams {
+public class SearchParams {
 
-    String kParamSearchSubmitLocStr = "./feeds";
-    String kParamSearchSourceStr = "search-source";
-    String kParamSearchTermStr = "search-terms";
-    String kParamSearchTypeStr = "search-type";
-    String kParamSearchTypeAllStr = "all";
-    String kParamSearchTypeAnyStr = "any";
-    String kParamSearchElementTitleStr = "ele-title";
-    String kParamSearchElementDescStr = "ele-description";
+    public static final String kParamSearchSubmitLocStr = "./feeds";
+    public static final String kParamSearchSourceStr = "search-source";
+    public static final String kParamSearchTermStr = "search-terms";
+    public static final String kParamSearchTypeStr = "search-type";
+    public static final String kParamSearchTypeAllStr = "all";
+    public static final String kParamSearchTypeAnyStr = "any";
+    public static final String kParamSearchElementTitleStr = "ele-title";
+    public static final String kParamSearchElementDescStr = "ele-description";
 }

@@ -6,8 +6,8 @@ package constants;
 /**
  * @author Jason Zerbe
  */
-public interface PageData {
+public class PageData {
 
-    String kFrontPageTitleStr = "RSS Feed Search";
-    String kResultsPageTitleStr = "RSS Feed Results";
+    public static final String kFrontPageTitleStr = "RSS Feed Search";
+    public static final String kResultsPageTitleStr = "RSS Feed Results";
 }

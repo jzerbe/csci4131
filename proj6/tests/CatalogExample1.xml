@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cat:courseCatalog xmlns:cat="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns http://www-users.cselabs.umn.edu/~zerbe006/proj6/CourseCatalog.xsd">
+   <cat:course>
+      <cat:title>Internet Programming</cat:title>
+      <cat:instructor title="Prof">
+         <cat:firstname>Anand</cat:firstname>
+         <cat:lastname>Tripathi</cat:lastname>
+      </cat:instructor>
+      <cat:number>CS4131</cat:number>
+      <cat:schedule>
+         <cat:lecture day="Tue">10:30-11:30</cat:lecture>
+         <cat:lecture day="Th">10:30-11:30</cat:lecture>
+      </cat:schedule>
+      <cat:semester>Fall</cat:semester>
+      <cat:enrollment>50</cat:enrollment>
+   </cat:course>
+</cat:courseCatalog>

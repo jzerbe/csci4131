@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+targetNamespace="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns"
+elementFormDefault="qualified">
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            Schema for Course Catalog
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <!-- default -> minOccurs="1" maxOccurs="1" -->
+
+    <!-- root element -->
+    <xsd:element name="courseCatalog" type="CourseCatalogType" />
+
+    <!-- recursive type definitions -->
+    <xsd:complexType name="CourseCatalogType">
+        <xsd:sequence>
+            <xsd:element name="course" type="CourseType"
+            minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="CourseType">
+        <xsd:sequence>
+            <xsd:element name="title" type="xsd:string" />
+            <xsd:element name="instructor" type="InstructorType"
+            maxOccurs="3" />
+            <xsd:element name="number" type="CourseNumberType" />
+            <xsd:element name="schedule" type="ScheduleType" />
+            <xsd:element name="semester">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="Fall"/>
+                        <xsd:enumeration value="Spring"/>
+                        <xsd:enumeration value="Summer"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="enrollment">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:integer">
+                        <xsd:minInclusive value="0" />
+                        <xsd:maxInclusive value="100" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="InstructorType">
+        <xsd:sequence>
+            <xsd:element name="firstname" type="xsd:string" />
+            <xsd:element name="lastname" type="xsd:string" />
+        </xsd:sequence>
+        <xsd:attribute name="title" type="PersonTitle" use="optional" />
+    </xsd:complexType>
+
+    <xsd:simpleType name="PersonTitle">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Dr" />
+            <xsd:enumeration value="Prof" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="CourseNumberType">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[A-Z]{2}\d{4}" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="ScheduleType">
+        <xsd:sequence>
+            <xsd:element name="lecture" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="TimeRange">
+                            <xsd:attribute name="day" use="required">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:string">
+                                        <xsd:enumeration value="Mon" />
+                                        <xsd:enumeration value="Tue" />
+                                        <xsd:enumeration value="Wed" />
+                                        <xsd:enumeration value="Th" />
+                                        <xsd:enumeration value="Fri" />
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:attribute>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="TimeRange">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d{2}:\d{2}-\d{2}:\d{2}" />
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

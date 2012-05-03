@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns"
+<xsd:schema xmlns="urn:jzerbe:proj6"
 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-targetNamespace="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns"
+targetNamespace="urn:jzerbe:proj6"
 elementFormDefault="qualified">
     <xsd:annotation>
         <xsd:documentation xml:lang="en">

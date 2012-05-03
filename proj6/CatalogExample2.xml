@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<courseCatalog xmlns="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns"
+<?xml-stylesheet type="text/xsl" href="Catalog.xsl"?>
+<courseCatalog xmlns="urn:jzerbe:proj6"
 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www-users.cselabs.umn.edu/~zerbe006/proj6/ns http://www-users.cselabs.umn.edu/~zerbe006/proj6/CourseCatalog.xsd">
+xsi:schemaLocation="urn:jzerbe:proj6 http://www-users.cselabs.umn.edu/~zerbe006/proj6/CourseCatalog.xsd">
    <course>
       <title>Internet Programming</title>
       <instructor title="Prof">
